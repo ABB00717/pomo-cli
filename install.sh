@@ -5,7 +5,7 @@
 # Configuration
 INSTALL_DIR="$HOME/.local/bin"
 SCRIPT_NAME="pomo"
-REPO_URL=""
+REPO_URL="https://raw.githubusercontent.com/ABB00717/pomo-cli/refs/heads/master/pomo"
 
 # Colors 
 COLOR_GREEN='\033[0;32m'
