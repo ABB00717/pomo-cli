@@ -26,12 +26,12 @@ You can install `pomo-cli` with a single command using `curl` or `wget`:
 
 **curl:**
 ```bash
-bash -c "$(curl -fsSL [https://raw.githubusercontent.com/ABB00717/pomo-cli/refs/heads/master/install.sh](https://raw.githubusercontent.com/ABB00717/pomo-cli/refs/heads/master/install.sh))"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ABB00717/pomo-cli/refs/heads/master/install.sh)"
 ```
 
 **wget:**
 ```bash
-bash -c "$wget -O- [https://raw.githubusercontent.com/ABB00717/pomo-cli/refs/heads/master/install.sh](https://raw.githubusercontent.com/ABB00717/pomo-cli/refs/heads/master/install.sh))"
+bash -c "$(wget -qO- https://raw.githubusercontent.com/ABB00717/pomo-cli/refs/heads/master/install.sh)"
 ```
 
 The script will be installed to `~/.local/bin`. Please ensure `~/.local/bin` is in your shell's `PATH`.
