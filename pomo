@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# Configurations
+WORK_MINS=${1:-25}
+SHORT_BREAK_MINS=${2:-5}
+LONG_BREAK_MINS=${3:-15}
+POMODOROS_UNTIL_LONG_BREAK=4
+
+# State
+pomodoro_count=0
+session_type="WORK"
+
+# UI & Colors
+COLOR_RESET='\033[00m'
+COLOR_WORK='\033[91m'  # Light Red
+COLOR_BREAK='\033[92m' # Light Green
+COLOR_LONG_BREAK='\033[93m' # Gold
+COLOR_INFO='\033[94m'  # Light Blue
+
+# Functions
+
+function cleanup() {
+    echo -e "\n\nPomodoro terminated! Well done today!"
+    tput cnorm # Set cursor to normal visibility
+    exit 0
+}
+
+# Detect terminate signal
+trap cleanup INT
+
+# Countdown Function
+# @arg1: session total seconds
+# @arg2: session type for display
+function countdown() {
+    local total_seconds=$1
+    local type_display=$2
+    local current_seconds=$total_seconds
+
+    local color=$COLOR_WORK
+    if [[ "$session_type" == "SHORT_BREAK" ]]; then
+        color=$COLOR_BREAK
+    elif [[ "$session_type" == "LONG_BREAK" ]]; then
+        color=$COLOR_LONG_BREAK
+    fi
+
+    tput civis # Set cursor invisible
+
+    while [ $current_seconds -ge 0 ]; do
+        mins=$((current_seconds / 60))
+        secs=$((current_seconds % 60))
+            
+        progress_done=$(( (total_seconds - current_seconds) * 50 / total_seconds ))
+        progress_rem=$(( 50 - progress_done ))
+        progress_bar=""
+        for ((i=0; i<progress_done; i++)); do progress_bar+="█"; done
+        for ((i=0; i<progress_rem; i++)); do progress_bar+="░"; done
+
+        echo -ne "${color} ${type_display} ${COLOR_RESET}| ${progress_bar} | ${COLOR_INFO}$(printf "%02d:%02d" $mins $secs)${COLOR_RESET} \r"
+
+        sleep 1
+        current_seconds=$((current_seconds - 1))
+    done
+
+    tput cnorm
+    echo
+}
+
+# ---- Main ----
+echo "===== Pomodoro is activated! Press Ctrl+C to stop ====="
+echo "Configurations: Work=${WORK_MINS}m, Short Break=${SHORT_BREAK_MINS}m, Long Break=${LONG_BREAK_MINS}m"
+sleep 2
+
+while true; do
+    session_type="WORK"
+    display_text="[WORK #$(( pomodoro_count + 1 ))]"
+
+    # Send desktop notification (GNOME)
+    notify-send "🍅 Start Working!!!" "A ${WORK_MINS} minutes long work section start" -i "dialog-information"
+
+    countdown $((WORK_MINS * 60)) "$display_text"
+
+    pomodoro_count=$((pomodoro_count + 1))
+
+    # ---- Break ----
+    if (( pomodoro_count % POMODOROS_UNTIL_LONG_BREAK == 0 )); then
+        session_type="LONG_BREAK"
+        display_text="[LONG_BREAK]"
+        break_mins=$LONG_BREAK_MINS
+        notify-send "🎉 Great Job!!! You completed a full round!" "Have a good rest for ${break_mins} minutes!" -i "face-cool"
+    else
+        session_type="SHORT_BREAK"
+        display_text="[SHORT BREAK]"
+        break_mins=$SHORT_BREAK_MINS
+        notify-send "👍 Well Done!" "Take a break and be back in ${break_mins} minutes." -i "face-smile"
+    fi
+
+    countdown $((break_mins * 60)) "$display_text"
+done
